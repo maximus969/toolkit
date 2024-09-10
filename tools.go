@@ -65,7 +65,12 @@ import (
 		t.MaxFileSize = 1024 * 1024 * 1024
 	}
 
-	err := r.ParseMultipartForm(int64(t.MaxFileSize))
+	err := t.CreateDirIfNotExist(uploadDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.ParseMultipartForm(int64(t.MaxFileSize))
 	if err != nil {
 		return nil, errors.New("the uploaded file is too big")
 	}
@@ -141,4 +146,18 @@ import (
 		}
 	}
 	return uploadedFiles, nil
+}
+
+// CreateDirIfNotExist creates a directory, and all necessary, if it is not exists
+func (t *Tools) CreateDirIfNotExist(path string) error {
+	const mode = 0755
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.MkdirAll(path, mode)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
